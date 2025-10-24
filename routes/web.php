@@ -6,6 +6,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SavingGoalController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\MutationImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -50,5 +51,12 @@ Route::middleware('auth')->group(function(){
     Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
 });
+
+Route::middleware('auth')->group(function(){
+    Route::get('/import', [MutationImportController::class, 'index'])->name('import.index');
+    Route::post('/import/preview', [MutationImportController::class, 'preview'])->name('import.preview');
+    Route::post('/import/commit', [MutationImportController::class, 'commit'])->name('import.commit');
+});
+
 
 require __DIR__.'/auth.php';
