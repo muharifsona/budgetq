@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SavingGoalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MutationImportController;
+use App\Http\Controllers\InsightController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -57,6 +58,9 @@ Route::middleware('auth')->group(function(){
     Route::post('/import/preview', [MutationImportController::class, 'preview'])->name('import.preview');
     Route::post('/import/commit', [MutationImportController::class, 'commit'])->name('import.commit');
 });
+
+Route::middleware('auth')->get('/insight', [InsightController::class,'index'])->name('insight');
+
 
 
 require __DIR__.'/auth.php';
