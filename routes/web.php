@@ -36,13 +36,10 @@ Route::middleware(['auth'])->group(function(){
 Route::middleware(['auth'])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::middleware('auth')->group(function(){
-
     Route::get('/saving-goals', [SavingGoalController::class, 'index'])
         ->name('saving.goals');
-
     Route::post('/saving-goals', [SavingGoalController::class, 'store'])
         ->name('saving.goals.store');
-
     Route::post('/saving-goals/{goal}', [SavingGoalController::class, 'update'])
         ->name('saving.goals.update');
 });
