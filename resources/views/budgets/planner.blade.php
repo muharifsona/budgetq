@@ -50,9 +50,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div>
                                 <label class="text-sm">Total Budget (bulan ini)</label>
-                                <input name="total_amount" type="number" min="0" step="1000"
-                                    value="{{ $budget->total_amount }}"
-                                    class="border rounded px-3 py-1 w-full text-right">
+                                <!-- Visible text input -->
+                                <input
+                                    type="text"
+                                    class="border rounded px-3 py-1 w-full text-right"
+                                    x-model="formattedTotal"
+                                    @input="updateTotal($event.target.value)"
+                                >
+
+                                <!-- Hidden numeric -->
+                                <input type="hidden" name="total_amount" :value="totalAmount">
                             </div>
                             <div>
                                 <label class="text-sm hidden md:block md:py-0.5">&nbsp;</label>
@@ -259,6 +266,26 @@
                 formatted: new Intl.NumberFormat('id-ID').format(a.amount),
             })),
             totalAmount: Number(opts.totalAmount || 0),
+            formattedTotal: '',
+
+            // 2️⃣ LIFECYCLE
+            init() {
+                this.formattedTotal = this.formatIDR(this.totalAmount);
+            },
+            updateTotal(val){
+                const raw = val.replace(/\D/g, '');
+                const num = Number(raw || 0);
+
+                this.totalAmount = num; // <- ❗ sumber kebenaran
+                this.formattedTotal = this.formatIDR(num);
+
+                // re-evaluate overspend state (instant)
+                this.allocated = this.allocated.map(a => ({...a}));
+            },
+            maxSlider(){
+                return Math.max(0, this.totalAmount);
+            },
+
             isSaving: false,
             expenses: @js($expensesByCategory),
             formatMoney(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0); },
