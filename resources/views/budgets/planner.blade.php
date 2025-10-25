@@ -144,6 +144,7 @@
                                             :max="maxSlider()"
                                             step="10000"
                                             x-model.number="item.amount"
+                                            @input="item.formatted = formatIDR(item.amount)"
                                             class="w-full">
 
                                         <span class="text-xs"
@@ -155,12 +156,12 @@
                                     </div>
 
                                     {{-- INPUT NUMBER --}}
-                                    <input type="number"
-                                        step="1000"
-                                        min="0"
+                                    <input type="text"
                                         class="border rounded px-2 py-1 mt-2 md:mt-0 md:w-36 w-full text-right"
-                                        x-model.number="item.amount"
-                                        @change="item.amount = Number(item.amount)">
+                                        x-model="item.formatted"
+                                        @input="updateMoneyInput(item, $event.target.value)"
+                                    >
+
                                 </div>
 
                                 {{-- <div class="w-full h-1.5 rounded-full bg-gray-200 overflow-hidden mt-2">
@@ -253,7 +254,10 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('budgetPlanner', (opts) => ({
             available: opts.initialAvailable || [],
-            allocated: (opts.initialAllocated || []).map(a => ({...a})),
+            allocated: (opts.initialAllocated || []).map(a => ({
+                ...a,
+                formatted: new Intl.NumberFormat('id-ID').format(a.amount),
+            })),
             totalAmount: Number(opts.totalAmount || 0),
             isSaving: false,
             expenses: @js($expensesByCategory),
@@ -332,7 +336,7 @@
             showManageCategories: false,
             tempCategories: [],     // working list di modal
             newCategoryName: '',
-            // Dapatkan daftar kategori unik dari 'available' + 'allocated'
+
             mergedCategories() {
                 const map = new Map();
                 // dari available
@@ -345,7 +349,7 @@
                 });
                 return Array.from(map.values());
             },
-            // sinkronkan perubahan nama/warna ke both 'available' & 'allocated'
+
             applyCategoryChangesToState(updatedList) {
                 // update available
                 this.available = this.available
@@ -374,6 +378,7 @@
                 this.newCategoryName = '';
                 this.showManageCategories = true;
             },
+
             addTempCategory(){
                 const name = this.newCategoryName.trim();
                 if (!name) return;
@@ -389,11 +394,13 @@
                 });
                 this.newCategoryName = '';
             },
+
             removeTempCategory(id){
                 // hapus dari working list
                 this.tempCategories = this.tempCategories.filter(c => c.id !== id);
                 // NB: saat saveCategories() kita juga akan hapus dari state utama & alokasi
             },
+
             async saveCategories(){
                 // validasi nama kosong
                 if (this.tempCategories.some(c => !c.name.trim())) {
@@ -434,6 +441,26 @@
                 }finally{
                     this.showManageCategories = false;
                 }
+            },
+
+            formatIDR(n){
+                return new Intl.NumberFormat('id-ID').format(n);
+            },
+
+            updateMoneyInput(item, val) {
+                const el = event.target;
+                const pos = el.selectionStart;
+
+                const raw = val.replace(/\D/g, '');
+                const num = Number(raw || 0);
+
+                item.amount = num;
+                item.formatted = this.formatIDR(num);
+
+                this.$nextTick(() => {
+                    const newPos = pos + (item.formatted.length - val.length);
+                    el.setSelectionRange(newPos, newPos);
+                });
             },
 
             async save(){
