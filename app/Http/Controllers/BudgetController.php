@@ -29,7 +29,23 @@ class BudgetController extends Controller
             ->groupBy('category_id')
             ->pluck('total','category_id');
 
-        return view('budgets.planner', compact('budget','allocations', 'availableCategories', 'expensesByCategory'));
+        // prev & next month
+        $prev = \Carbon\Carbon::create($year, $month)->subMonth();
+        $next = \Carbon\Carbon::create($year, $month)->addMonth();
+
+        $prevYear = $prev->year;
+        $prevMonth = $prev->month;
+
+        $nextYear = $next->year;
+        $nextMonth = $next->month;
+
+        // return view('budgets.planner', compact('budget','allocations', 'availableCategories', 'expensesByCategory'));
+        return view('budgets.planner', compact(
+            'budget','allocations', 'availableCategories',
+            'expensesByCategory','year','month',
+            'prevYear','prevMonth','nextYear','nextMonth'
+        ));
+
     }
 
     public function storeOrUpdate(Request $request, int $year, int $month)

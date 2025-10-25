@@ -1,3 +1,6 @@
+@php
+$y = now()->year; $m = now()->month;
+@endphp
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,10 +18,21 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('budgets.show', [$y,$m])" :active="request()->routeIs('budgets.show')">
+                        Budget Planner
+                    </x-nav-link>
+                    <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.index')">
+                        Expense
+                    </x-nav-link>
+                    <x-nav-link :href="route('saving.goals')" :active="request()->routeIs('saving.goals')">
+                        Saving Goals
+                    </x-nav-link>
+                    <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.index')">
+                        Reports
+                    </x-nav-link>
                     <x-nav-link :href="route('insight')" :active="request()->routeIs('insight')">
                         Insight
                     </x-nav-link>
-
                 </div>
             </div>
 
@@ -73,6 +87,21 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('budgets.show', [$y, $m])" :active="request()->routeIs('budgets.show')">
+                {{ __('Budget Planner') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.index')">
+                {{ __('Expense') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('saving.goals')" :active="request()->routeIs('saving.goals')">
+                {{ __('Saving Goals') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.index')">
+                {{ __('Reports') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('insight')" :active="request()->routeIs('insight')">
+                {{ __('Insight') }}
             </x-responsive-nav-link>
         </div>
 

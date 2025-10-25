@@ -1,7 +1,7 @@
 <x-app-layout>
 <div class="max-w-4xl mx-auto p-6 space-y-6">
 
-    <h1 class="text-2xl font-bold">AI Spending Insight 🔍</h1>
+    <h1 class="text-2xl font-bold">Spending Insight 🔍</h1>
 
     <div class="bg-white border rounded-xl p-4">
         <div class="text-sm text-gray-500">Financial Health Score</div>

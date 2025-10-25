@@ -8,6 +8,7 @@ use App\Http\Controllers\SavingGoalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MutationImportController;
 use App\Http\Controllers\InsightController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -57,10 +58,11 @@ Route::middleware('auth')->group(function(){
     Route::get('/import', [MutationImportController::class, 'index'])->name('import.index');
     Route::post('/import/preview', [MutationImportController::class, 'preview'])->name('import.preview');
     Route::post('/import/commit', [MutationImportController::class, 'commit'])->name('import.commit');
+
+    Route::post('/categories/sync', [CategoryController::class,'sync'])->name('categories.sync');
 });
 
 Route::middleware('auth')->get('/insight', [InsightController::class,'index'])->name('insight');
-
 
 
 require __DIR__.'/auth.php';
