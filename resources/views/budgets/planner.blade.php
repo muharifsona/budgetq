@@ -68,7 +68,14 @@
                 <div class="border rounded-2xl p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="font-semibold">Kategori Tersedia</h2>
-                        <span class="text-xs text-gray-500" x-text="available.length + ' item'"></span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500" x-text="available.length + ' item'"></span>
+                            <button
+                                class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
+                                @click="startManage()">
+                                Kelola
+                            </button>
+                        </div>
                     </div>
 
                     <div id="availableList" class="min-h-48 border rounded-xl p-3 space-y-2 bg-gray-50"
@@ -194,6 +201,50 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal Manage Categories -->
+            <div x-show="showManageCategories" x-cloak
+                class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow p-4 w-96">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold">Kelola Kategori</h3>
+                        <button class="text-sm text-gray-500" @click="showManageCategories=false">✕</button>
+                    </div>
+
+                    <!-- List kategori yang bisa diedit -->
+                    <div class="max-h-72 overflow-y-auto divide-y">
+                        <template x-for="(cat, i) in tempCategories" :key="cat.id">
+                            <div class="flex items-center justify-between py-2 gap-2">
+                                <div class="flex items-center gap-2 w-full">
+                                    <input type="color" class="w-6 h-6" x-model="cat.color">
+                                    <input type="text"
+                                        class="border rounded px-2 py-1 w-full text-sm"
+                                        x-model.trim="cat.name"
+                                        placeholder="Nama kategori">
+                                </div>
+                                <button class="text-red-600 text-xs" @click="removeTempCategory(cat.id)">Hapus</button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Tambah kategori baru -->
+                    <div class="mt-3 flex gap-2">
+                        <input type="text" class="border rounded px-2 py-1 w-full text-sm"
+                            placeholder="Kategori baru"
+                            x-model.trim="newCategoryName"
+                            @keydown.enter.prevent="addTempCategory()">
+                        <button class="bg-black text-white px-3 py-1 rounded text-sm"
+                            @click="addTempCategory()">Add</button>
+                    </div>
+
+                    <div class="mt-3 flex items-center justify-between">
+                        <button class="text-sm" @click="showManageCategories=false">Batal</button>
+                        <button class="bg-indigo-600 text-white px-3 py-1 rounded text-sm"
+                            @click="saveCategories()">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -276,6 +327,113 @@
 
             dragend(e){
                 e.target.classList.remove('dragging')
+            },
+
+            showManageCategories: false,
+            tempCategories: [],     // working list di modal
+            newCategoryName: '',
+            // Dapatkan daftar kategori unik dari 'available' + 'allocated'
+            mergedCategories() {
+                const map = new Map();
+                // dari available
+                this.available.forEach(c => map.set(c.id, { id: c.id, name: c.name, color: c.color || '#e5e7eb' }));
+                // dari allocated (kalau ada kategori yang tidak ada di available)
+                this.allocated.forEach(a => {
+                    if (!map.has(a.category_id)) {
+                    map.set(a.category_id, { id: a.category_id, name: a.name, color: a.color || '#e5e7eb' });
+                    }
+                });
+                return Array.from(map.values());
+            },
+            // sinkronkan perubahan nama/warna ke both 'available' & 'allocated'
+            applyCategoryChangesToState(updatedList) {
+                // update available
+                this.available = this.available
+                    .filter(av => updatedList.find(u => u.id === av.id)) // buang yang dihapus
+                    .map(av => {
+                    const u = updatedList.find(u => u.id === av.id);
+                    return u ? { ...av, name: u.name, color: u.color } : av;
+                    });
+                // ada kategori baru? masukkan ke available
+                updatedList.forEach(u => {
+                    if (!this.available.find(av => av.id === u.id)
+                        && !this.allocated.find(al => al.category_id === u.id)) {
+                    this.available.push({ id: u.id, name: u.name, color: u.color });
+                    }
+                });
+                // update allocated (rename/color)
+                this.allocated = this.allocated.map(al => {
+                    const u = updatedList.find(u => u.id === al.category_id);
+                    return u ? { ...al, name: u.name, color: u.color } : al;
+                });
+            },
+
+            startManage(){
+                // buka modal + siapkan working copy
+                this.tempCategories = this.mergedCategories().map(c => ({...c}));
+                this.newCategoryName = '';
+                this.showManageCategories = true;
+            },
+            addTempCategory(){
+                const name = this.newCategoryName.trim();
+                if (!name) return;
+                // anti duplikat nama (case-insensitive)
+                if (this.tempCategories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+                    alert('Kategori sudah ada.');
+                    return;
+                }
+                this.tempCategories.push({
+                    id: Date.now(),          // temp id — backend bisa ganti saat sync jika pakai create
+                    name,
+                    color: '#e5e7eb',
+                });
+                this.newCategoryName = '';
+            },
+            removeTempCategory(id){
+                // hapus dari working list
+                this.tempCategories = this.tempCategories.filter(c => c.id !== id);
+                // NB: saat saveCategories() kita juga akan hapus dari state utama & alokasi
+            },
+            async saveCategories(){
+                // validasi nama kosong
+                if (this.tempCategories.some(c => !c.name.trim())) {
+                    alert('Ada nama kategori yang kosong.');
+                    return;
+                }
+
+                // Terapkan ke state dulu (agar UI langsung berubah)
+                const updated = this.tempCategories.map(c => ({...c}));
+                // hapus kategori yang dihilangkan dari tempCategories: drop dari available & allocated
+                const removedIds = this.mergedCategories()
+                    .filter(old => !updated.find(u => u.id === old.id))
+                    .map(x => x.id);
+
+                // apply rename/color & add new
+                this.applyCategoryChangesToState(updated);
+                // remove allocations yang pakai kategori dihapus
+                if (removedIds.length){
+                    this.available = this.available.filter(av => !removedIds.includes(av.id));
+                    this.allocated = this.allocated.filter(al => !removedIds.includes(al.category_id));
+                }
+
+                // Kirim ke backend untuk sync (opsional tapi direkomendasikan)
+                try{
+                    const res = await fetch('{{ route("categories.sync") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ categories: updated, removed_ids: removedIds })
+                    });
+                    if(!res.ok) throw new Error('Gagal menyimpan kategori');
+                    // optional: toast
+                    // alert('Kategori tersimpan');
+                }catch(e){
+                    alert(e.message || 'Error menyimpan kategori');
+                }finally{
+                    this.showManageCategories = false;
+                }
             },
 
             async save(){
