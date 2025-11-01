@@ -9,6 +9,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MutationImportController;
 use App\Http\Controllers\InsightController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\IncomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -53,6 +54,8 @@ Route::middleware(['auth'])->group(function() {
     Route::post('/categories/sync', [CategoryController::class,'sync'])->name('categories.sync');
 
     Route::get('/insight', [InsightController::class,'index'])->name('insight');
+
+    Route::resource('incomes', IncomeController::class);
 });
 
 

@@ -24,6 +24,9 @@ $y = now()->year; $m = now()->month;
                     <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.index')">
                         Expense
                     </x-nav-link>
+                    <x-nav-link :href="route('incomes.index')" :active="request()->routeIs('incomes.index')">
+                        Income
+                    </x-nav-link>
                     <x-nav-link :href="route('saving.goals')" :active="request()->routeIs('saving.goals')">
                         Saving Goals
                     </x-nav-link>
@@ -93,6 +96,9 @@ $y = now()->year; $m = now()->month;
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.index')">
                 {{ __('Expense') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('incomes.index')" :active="request()->routeIs('incomes.index')">
+                {{ __('Income') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('saving.goals')" :active="request()->routeIs('saving.goals')">
                 {{ __('Saving Goals') }}

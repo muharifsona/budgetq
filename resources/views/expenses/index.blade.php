@@ -1,13 +1,19 @@
 <x-app-layout>
-<div class="max-w-4xl mx-auto p-4 space-y-6"
+<div class="max-w-5xl mx-auto p-4 space-y-4"
     x-data="{ showForm:false }">
 
     <div class="flex items-center justify-between">
         <h1 class="text-xl font-semibold">Riwayat Pengeluaran</h1>
-        <button @click="showForm = !showForm"
-                class="bg-black text-white px-4 py-2 rounded-lg">
+        <div>
+        <a href="import"
+            class="bg-black text-white px-4 py-2 me-1 rounded-lg">
+            + Import CSV
+        </a>
+        <a role="button" @click="showForm = !showForm"
+            class="bg-black text-white px-4 py-2 rounded-lg">
             + Input Pengeluaran
-        </button>
+        </a>
+        </div>
     </div>
 
     {{-- FORM --}}

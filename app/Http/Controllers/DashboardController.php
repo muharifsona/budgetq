@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\Expense;
+use App\Models\Income;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -54,10 +55,20 @@ class DashboardController extends Controller
         });
         $trendLabels = $trendFinal->keys()->map(fn($m) => Carbon::parse($m)->format('M'));
 
+        $incomeThisMonth = Income::where('user_id',auth()->id())
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->sum('amount');
+
+        $tbb = Income::where('user_id',auth()->id())
+            ->where('allocation_mode','tbb')
+            ->sum('amount');
+            //  - AllocationUsedTotal();
+
         return view('dashboard', compact(
             'budget',
             'expensesByCategory',
-            'trend', 'trendFinal', 'trendLabels'
+            'trend', 'trendFinal', 'trendLabels', 'tbb'
         ));
     }
 }

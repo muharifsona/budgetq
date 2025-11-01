@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Category;
+use App\Models\Income;
 use Carbon\Carbon;
 use DB;
 
@@ -296,6 +297,10 @@ class InsightController extends Controller
         if ($coffee > 10)      $actions[] = "Batasi 'ngopi luar' jadi 2x minggu.";
         if ($spentPct > 80)    $actions[] = "Bekukan pembelian discretionary 7 hari.";
         if ($ratio > 20)       $actions[] = "Audit top 3 kategori & pause 1 minggu.";
+
+        $totalIncome6 = Income::where('user_id',auth()->id())
+            ->whereBetween('date', [$start,$end])
+            ->sum('amount');
 
         return view('insight.index', compact(
             'thisMonth',
